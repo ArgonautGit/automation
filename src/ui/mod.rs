@@ -1,17 +1,8 @@
-use std::{
-    sync::{Arc, atomic::AtomicBool},
-    thread,
-    time::Duration,
-};
+use std::sync::{Arc, atomic::AtomicBool};
 
-use eframe::{egui, glow::REPLACE};
-use egui::Button;
+use eframe::egui;
 
 mod menu;
-
-use crate::automation::{self, mouse::CursorPosition};
-
-use super::automation::mouse;
 
 pub fn run() -> eframe::Result {
     let options = eframe::NativeOptions {

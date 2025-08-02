@@ -1,6 +1,8 @@
+#![allow(dead_code)]
+
 use std::sync::Arc;
-use std::time::{Duration, Instant};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::{Duration, Instant};
 
 use rustautogui::{MouseClick, RustAutoGui, errors::AutoGuiError};
 
@@ -45,7 +47,7 @@ impl MouseRecording {
         escape_flag: Arc<AtomicBool>, // Should we cancel the macro?
     ) -> Result<MouseRecording, Error> {
         if polling_rate > Duration::from_millis(100) {
-            return Err(Error::ResolutionError);
+            return Err(Error::Resolution);
         }
 
         log::info!("Starting mouse path recording");
@@ -82,7 +84,6 @@ impl MouseRecording {
     }
 
     // Asynchrously replay mouse path.
-    #[allow(dead_code)]
     pub async fn replay(&self) -> Result<(), Error> {
         for position in &self.path {
             // Check if replay was cancelled.
@@ -92,7 +93,7 @@ impl MouseRecording {
                 break;
             }
 
-            move_to(&position)?;
+            move_to(position)?;
             // Avoid blocking the thread.
             smol::Timer::after(self.polling_rate).await;
         }
@@ -105,11 +106,11 @@ impl MouseRecording {
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("AutoGuiError occured: {0}")]
-    AutoGuiError(#[from] AutoGuiError),
+    AutoGui(#[from] AutoGuiError),
     #[error("Replay resolution is too coarse")]
-    ResolutionError,
+    Resolution,
     #[error("Replay error")]
-    ReplayError,
+    Replay,
     #[error("Macro cancelled")]
     MacroCancel,
 }
