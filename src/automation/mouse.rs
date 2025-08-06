@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
 use rustautogui::{MouseClick, RustAutoGui, errors::AutoGuiError};
@@ -34,18 +32,13 @@ pub fn click(button: MouseClick) -> Result<(), Error> {
 pub struct MouseRecording {
     path: Vec<CursorPosition>,
     polling_rate: Duration,
-    should_cancel: Arc<AtomicBool>,
 }
 
 impl MouseRecording {
     /// Start recording a mouse path immediately for as long as `duration`.
     /// `polling_rate` is the time between each cursor position snapshot.
     /// `escape_flag` is to tell the function to cancel.
-    pub async fn new(
-        duration: Duration,
-        polling_rate: Duration,
-        escape_flag: Arc<AtomicBool>, // Should we cancel the macro?
-    ) -> Result<MouseRecording, Error> {
+    pub async fn new(duration: Duration, polling_rate: Duration) -> Result<MouseRecording, Error> {
         if polling_rate > Duration::from_millis(100) {
             return Err(Error::Resolution);
         }
@@ -53,18 +46,11 @@ impl MouseRecording {
         log::info!("Starting mouse path recording");
 
         // Spawn a new thread to avoid blocking the gui thread.
-        let moved_escape_flag = Arc::clone(&escape_flag); // Pas
         let task: smol::Task<Result<Vec<CursorPosition>, Error>> = smol::spawn(async move {
             let mut path = Vec::new();
             let start = Instant::now();
+            // Until the required duration has passed.
             while start.elapsed() < duration {
-                // Until the required duration has passed.
-                // If we should cancel the macro.
-                if moved_escape_flag.load(Ordering::Relaxed) {
-                    moved_escape_flag.store(false, Ordering::Relaxed); // Say we cancelled.
-                    log::info!("Recording macro cancelled");
-                    return Err(Error::MacroCancel);
-                }
 
                 path.push(get_position()?);
                 smol::Timer::after(polling_rate).await;
@@ -76,23 +62,12 @@ impl MouseRecording {
         // Avoid blocking the thread.
         let path = task.await?;
 
-        Ok(MouseRecording {
-            path,
-            polling_rate,
-            should_cancel: escape_flag,
-        })
+        Ok(MouseRecording { path, polling_rate })
     }
 
     // Asynchrously replay mouse path.
     pub async fn replay(&self) -> Result<(), Error> {
         for position in &self.path {
-            // Check if replay was cancelled.
-            if self.should_cancel.load(Ordering::Relaxed) {
-                self.should_cancel.store(false, Ordering::Relaxed);
-                log::info!("Cancelling mouse path replay");
-                break;
-            }
-
             move_to(position)?;
             // Avoid blocking the thread.
             smol::Timer::after(self.polling_rate).await;
