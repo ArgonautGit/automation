@@ -39,12 +39,18 @@ fn handle_mouse_command(command: MouseCommand) -> anyhow::Result<()> {
     Ok(())
 }
 fn handle_keyboard_command(command: KeyboardCommand) -> anyhow::Result<()> {
-    let keyboard = keyboard::Keyboard::new()?;sdfd
+    let keyboard = keyboard::Keyboard::new()?;
+
+    use KeyboardCommand::*;
+    match command {
+        Press { key } => keyboard.press(key)?,
+        Type { ref string } => keyboard.type_string(string)?,
+    }
 
     Ok(())
 }
-fn handle_script_command(command: ScriptArgs) -> anyhow::Result<()> {
-    todo!()
+fn handle_script_command(_command: ScriptArgs) -> anyhow::Result<()> {
+    unimplemented!()
 }
 
 impl From<args::MouseButton> for mouse::MouseButton {
