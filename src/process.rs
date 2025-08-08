@@ -5,7 +5,7 @@ use clap::Parser;
 
 use crate::args::{self, KeyboardCommand, MouseCommand, ScriptArgs};
 
-pub fn entry() {
+pub fn entry() -> anyhow::Result<()> {
     let args = args::Args::parse();
 
     let result = match args.command {
@@ -15,13 +15,7 @@ pub fn entry() {
     };
 
     // All application error handling happens here.
-    match result {
-        Ok(()) => {}
-        Err(e) => {
-            log::error!("Unexepectedly exited with error: {e}");
-            eprintln!("Unexpectedly exited with error: {e}");
-        }
-    }
+    return result;
 }
 
 fn handle_mouse_command(command: MouseCommand) -> anyhow::Result<()> {

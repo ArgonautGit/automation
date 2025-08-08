@@ -5,9 +5,9 @@ use clap::Parser;
 mod args;
 mod process;
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     simple_logger::init_with_level(log::Level::Trace).expect("failed to start logger");
     args::Args::parse();
 
-    process::entry();
+    return process::entry()
 }
