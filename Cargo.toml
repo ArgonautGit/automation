@@ -1,14 +1,19 @@
 [package]
-name = "automation"
+name = "automation-cli"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-eframe = "0.31.1"
-egui = "0.31.1"
-inputbot = "0.6.0"
 log = "0.4.27"
-rustautogui = "2.5.0"
 simple_logger = "5.0.0"
 smol = { version = "2.0.2", default-features = false }
-thiserror = "2.0.12"
+automation = { path = "automation" }
+clap = { version = "4.5.42", features = ["derive"] }
+anyhow = "1.0.98"
+
+[profile.release]
+opt-level = "z"       # Optimize for size
+lto = true            # Link Time Optimization
+codegen-units = 1     # Better optimization across units
+# panic = "abort"       # Smaller panic handling
+# strip = true          # Remove debug symbols (Rust 1.59+)

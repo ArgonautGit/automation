@@ -1,0 +1,4 @@
+use_small_heuristics = "Max"
+fn_single_line = true
+indent_style = "Visual"
+fn_args_layout = "Compressed"

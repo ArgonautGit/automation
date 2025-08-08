@@ -1,0 +1,10 @@
+[package]
+name = "automation"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+inputbot = "0.6.0"
+log = "0.4.27"
+rustautogui = "2.5.0"
+thiserror = "2.0.12"
